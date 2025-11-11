@@ -9,6 +9,9 @@
 
 </head>
 <body>
+  <form action="signin.php" method="POST" style="display:inline;">
+   <button class="clear" type="submit">LOG OUT</button>
+    </form>
   <!-- <div class="top-bar">
     <span>12:00 AM</span>
     <span>Thu Sept 25</span>
@@ -54,17 +57,17 @@
       <div class="product-grid">
         <h3>PREMIUM MATCHA SERIES</h3>
         <div class="items">
-          <div class="item">Matcha Latte - 145</div>
-          <div class="item">Strawberry Matcha Latte - 160</div>
-          <div class="item">Blueberry Matcha Latte - 170</div>
-          <div class="item">Salted Matcha Latte - 160</div>
-          <div class="item">Banana Matcha Latte - 160</div>
-          <div class="item">Pure Matcha Latte - 170</div>
-          <div class="item">Creamy Matcha Latte - 160</div>
-          <div class="item">Peach Matcha Latte - 165</div>
-          <div class="item">Dirty Matcha Latte - 130</div>
-          <div class="item">Peach Mango Matcha Latte - 155</div>
-          <div class="item">Mango Matcha Latte - 160</div>
+          <div class="item" data-name="Matcha Latte" data-price="145">Matcha Latte - 145</div>
+          <div class="item" data-name="Strawberry Matcha Latte" data-price="160">Strawberry Matcha Latte - 160</div>
+          <div class="item" data-name="Blueberry Matcha Latte" data-price="170">Blueberry Matcha Latte - 170</div>
+          <div class="item" data-name="Salted Matcha Latte" data-price="160">Salted Matcha Latte - 160</div>
+          <div class="item" data-name="Banana Matcha Latte" data-price="160">Banana Matcha Latte - 160</div>
+          <div class="item" data-name="Pure Matcha Latte" data-price="160">Pure Matcha Latte - 170</div>
+          <div class="item" data-name="Creamy Matcha Latte" data-price="160">Creamy Matcha Latte - 160</div>
+          <div class="item" data-name="Peach Matcha Latte" data-price="160">Peach Matcha Latte - 165</div>
+          <div class="item" data-name="Dirty Matcha Latte" data-price="160">Dirty Matcha Latte - 130</div>
+          <div class="item" data-name="Peach Mango Matcha Latte" data-price="160">Peach Mango Matcha Latte - 155</div>
+          <div class="item" data-name="Strawberry Matcha Latte" data-price="160">Mango Matcha Latte - 160</div>
           <div class="item">Biscoff Matcha Latte - 180</div>
           <div class="item">Hazelnut Matcha Latte - 160</div>
           <div class="item">White Choco Matcha Latte - 120</div>

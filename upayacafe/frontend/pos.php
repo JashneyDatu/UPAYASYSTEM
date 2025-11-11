@@ -1,77 +1,68 @@
 <?php
 session_start();
 
-// Handle checkout
+// Handle checkout form submission
+$checkoutMessage = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
-  $paymentType = $_POST['paymentType'];
-  $order = $_SESSION['order'] ?? [];
+    // Optionally get payment type from POST if exists
+    $paymentType = $_POST['paymentType'] ?? 'cash';
 
-  $total = array_sum(array_column($order, 'price'));
+    // Order array from session or empty
+    $order = $_SESSION['order'] ?? [];
 
-  file_put_contents('orders.json', json_encode([
-    'order' => $order,
-    'total' => $total,
-    'payment' => $paymentType,
-    'timestamp' => date('Y-m-d H:i:s')
-  ], JSON_PRETTY_PRINT));
+    // Compute total price
+    $total = 0.0;
+    foreach ($order as $item) {
+        $total += $item['price'] * $item['qty'];
+    }
 
-  unset($_SESSION['order']);
-  $checkoutMessage = "Order paid. Total: ₱{$total}";
+    // Save order to file (or you can save to DB)
+    file_put_contents('orders.json', json_encode([
+        'order' => $order,
+        'total' => $total,
+        'payment' => $paymentType,
+        'timestamp' => date('Y-m-d H:i:s')
+    ], JSON_PRETTY_PRINT));
+
+    // Clear session order after checkout
+    unset($_SESSION['order']);
+
+    $checkoutMessage = "Order paid. Total: ₱" . number_format($total, 2);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Upâyâ Café | POS System</title>
-  <link rel="stylesheet" href="pos.css">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="pos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@400;500&display=swap" rel="stylesheet" />
 </head>
 <body>
+    <form action="signin.php" method="POST" style="display:inline;">
+   <button class="clear" type="submit">LOG OUT</button>
+    </form>
 
-<script>
-document.querySelectorAll('.item').forEach(item => {
-  item.addEventListener('click', () => {
-    const [name, price] = item.textContent.split(' - ');
-    fetch('api/add-to-order.php', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: `item=${name}&price=${price}`
-    }).then(res => res.json()).then(data => {
-      console.log('Item added:', data);
-    });
-  });
-});
-
-document.querySelector('.checkout').addEventListener('click', () => {
-  fetch('api/process-payment.php', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    body: 'paymentType=cash'
-  }).then(res => res.json()).then(data => {
-    alert(`Order paid. Total: ₱${data.total}`);
-  });
-});
-</script>
 
   <div class="logo">
     <h1>Upâyâ</h1>
     <p>Café</p>
+    
   </div>
 
   <div class="pos-container">
     <!-- Sidebar -->
     <div class="sidebar">
-      <a href="pos.php" class="icon active">🏠</a>
-    
+      <a href="pos.php" class="icon <?= isset($activePage) && $activePage == 'pos.php' ? 'active' : '' ?>">🏠</a>
+      
     </div>
+    
 
     <!-- Main Menu Section -->
     <div class="menu-section">
       <div class="search-bar">
-        <input type="text" placeholder="SEARCH FOR PRODUCT">
+        <input type="text" placeholder="SEARCH FOR PRODUCT" id="search-box" />
       </div>
 
       <div class="category-tabs">
@@ -88,56 +79,64 @@ document.querySelector('.checkout').addEventListener('click', () => {
         <button><a href="pos10.php">PASTA</a></button>
       </div>
 
-      <div class="product-grid">
+      <div class="product-grid" id="product-grid">
         <h3>ESPRESSO</h3>
         <div class="items">
-          <div class="item">Americano - 110</div>
-          <div class="item">Cafe Latte - 120</div>
-          <div class="item">Caramel Macchiato - 135</div>
-          <div class="item">Iced Mocha - 125</div>
-          <div class="item">White Chocolate Mocha - 135</div>
-          <div class="item">Salted Caramel Latte - 135</div>
-          <div class="item">Spanish Latte - 130</div>
-          <div class="item">Hazelnut Latte - 130</div>
-          <div class="item">French Vanilla Latte - 110</div>
-          <div class="item">English Toffee Latte - 120</div>
-          <div class="item">Short Bread Cookie Latte - 130</div>
+          <div class="item" data-name="Americano" data-price="110">Americano - 110</div>
+          <div class="item" data-name="Cafe Latte" data-price="120">Cafe Latte - 120</div>
+          <div class="item" data-name="Caramel Macchiato" data-price="135">Caramel Macchiato - 135</div>
+          <div class="item" data-name="Iced Mocha" data-price="125">Iced Mocha - 125</div>
+          <div class="item" data-name="White Chocolate Mocha" data-price="135">White Chocolate Mocha - 135</div>
+          <div class="item" data-name="Salted Caramel Latte" data-price="135">Salted Caramel Latte - 135</div>
+          <div class="item" data-name="Spanish Latte" data-price="130">Spanish Latte - 130</div>
+          <div class="item" data-name="Hazelnut Latte" data-price="130">Hazelnut Latte - 130</div>
+          <div class="item" data-name="French Vanilla Latte" data-price="110">French Vanilla Latte - 110</div>
+          <div class="item" data-name="English Toffee Latte" data-price="120">English Toffee Latte - 120</div>
+          <div class="item" data-name="Short Bread Cookie Latte" data-price="130">Short Bread Cookie Latte - 130</div>
         </div>
 
         <h3>MUST-TRY COFFEE FLAVORS</h3>
         <div class="items">
-          <div class="item">Roasted Almond Latte - 130</div>
-          <div class="item">Macadamia Nut Latte - 130</div>
-          <div class="item">Toasted Marshmallow Latte - 135</div>
-          <div class="item">Butterscotch Latte - 135</div>
+          <div class="item" data-name="Butterscotch Latte" data-price="135">Butterscotch Latte - 135</div>
+          <div class="item" data-name="Pumpkin Spice Latte" data-price="130">Roasted Almond Latte - 130</div>
+          <div class="item" data-nname="Macadamia Nut Latte" data-price="130">Macadamia Nut Latte - 130</div>
+          <div class="item" data-name="Toasted Marshmallow Latte" data-price="135">Toasted Marshmallow Latte - 135</div>
         </div>
 
         <h3>SPECIAL COFFEE FLAVORS</h3>
         <div class="items">
-          <div class="item">Sea Salt Latte - 140</div>
-          <div class="item">Pumpkin Spice Latte - 140</div>
-          <div class="item">Choco Mint Latte - 145</div>
-          <div class="item">Biscoff Latte - 145</div>
+          <div class="item" data-name="Sea Salt Latte" data-price="140">Sea Salt Latte - 140</div>
+          <div class="item" data-name="Pumpkin Spice Latte" data-price="140">Pumpkin Spice Latte - 140</div>
+          <div class="item" data-name="Choco Mint Latte" data-price="145">Choc*Nut Latte - 145</div>
+          <div class="item" data-name="Biscoff Latte" data-price="145">Biscoff Latte - 165</div>
         </div>
       </div>
     </div>
 
-   <!-- Order Summary -->
-   <div class="order-summary">
-  <h3>Order Summary</h3>
-  <div class="summary-box" id="order-summary-box">
-    <p> </p>
-  </div>  
-  
-    <div class="checkout-row">
-      <button class="clear">Clear</button>
-      <button class="void">Void</button>
-      <form action="receipt.php" method="POST">
-      <button class="checkout">CHECKOUT ORDER</button>
-      </form>
-    </div>  
+    <!-- Order Summary -->
+    <div class="order-summary">
+      
+      <h3>Order Summary</h3>
+      <div class="summary-box" id="order-summary-box">
+        <p>No items added yet.</p>
       </div>
+
+      <form action="receipt.php" method="POST" id="checkout-form" class="checkout-row">
+        <div id="hidden-order-inputs"></div>
+        <button class="clear" type="button">Clear</button>
+        <button class="void" type="button">Void</button>
+        <button class="checkout" type="submit" name="checkout">CHECKOUT ORDER</button>
+        
+      </form>
+
+      <?php if(!empty($checkoutMessage)): ?>
+        <p style="margin-top:15px; font-weight:bold; color:green;"><?= htmlspecialchars($checkoutMessage) ?></p>
+      <?php endif; ?>
     </div>
   </div>
+
+<script src="pos.js"></script>
+
+
 </body>
-</php>
+</html>

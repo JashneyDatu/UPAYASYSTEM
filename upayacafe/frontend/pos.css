@@ -304,3 +304,15 @@ button a {
 button a:hover {
   color: inherit;
 }
+
+/* Highlight selected order summary item */
+#order-summary-box ul li.selected {
+  background-color: #f9d1d1; /* Light red background */
+  cursor: pointer;
+}
+
+/* Make order items cursor pointer */
+#order-summary-box ul li.selected {
+  background-color: #f9d1d1; /* Light red highlight */
+  border-radius: 6px;
+}
