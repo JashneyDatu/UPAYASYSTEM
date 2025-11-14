@@ -67,10 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Clear all orders
   clearBtn.addEventListener('click', () => {
-    orderItems.length = 0;
-    selectedIndex = -1;
-    renderOrderSummary();
-  });
+  orderItems.length = 0;       // Clears the array
+  selectedIndex = -1;          // Resets selection
+  renderOrderSummary();        // Re-renders UI
+});
+
 
   // Void (remove) selected item only
   voidBtn.addEventListener('click', () => {

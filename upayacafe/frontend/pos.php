@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
 </head>
 <body>
     <form action="signin.php" method="POST" style="display:inline;">
-   <button class="clear" type="submit">LOG OUT</button>
+   <button class="logout-btn" type="submit">LOG OUT</button>
     </form>
 
 
