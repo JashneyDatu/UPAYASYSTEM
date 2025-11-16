@@ -1,0 +1,47 @@
+[
+    {
+        "order": [],
+        "total": 0,
+        "payment": "cash",
+        "timestamp": "2025-11-16 04:57:20"
+    },
+    {
+        "order": [
+            {
+                "name": "Caramel Macchiato",
+                "price": "135",
+                "qty": "3"
+            },
+            {
+                "name": "Cafe Latte",
+                "price": "120",
+                "qty": "2"
+            }
+        ],
+        "total": 645,
+        "payment": "cash",
+        "timestamp": "2025-11-16 05:21:28"
+    },
+    {
+        "order": [
+            {
+                "name": "Cafe Latte",
+                "price": "120",
+                "qty": "2"
+            },
+            {
+                "name": "Americano",
+                "price": "110",
+                "qty": "1"
+            },
+            {
+                "name": "Hazelnut Latte",
+                "price": "130",
+                "qty": "2"
+            }
+        ],
+        "total": 610,
+        "payment": "cash",
+        "timestamp": "2025-11-16 05:22:02"
+    }
+]

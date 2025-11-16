@@ -1,4 +1,3 @@
-
 <!DOCTYPE php>
 <php lang="en">
 <head>
@@ -10,7 +9,7 @@
 
 </head>
 <body>
- 
+  
   <!-- <div class="top-bar">
     <span>12:00 AM</span>
     <span>Thu Sept 25</span>
@@ -26,13 +25,20 @@
     <p>Café</p>
   </div>
 
-  <div class="pos-container">
+
+    <div class="pos-container">
     <!-- Sidebar -->
     <div class="sidebar">
-      <a href="pos.php" class="icon active">🏠</a>
-       <a href="settings.php"
+  <!-- Home Button -->
+    <a href="admin.php" 
+     class="icon <?= isset($activePage) && $activePage == 'admin.php' ? 'active' : '' ?>">🏠</a>
+    <a href="orders.php" 
+     class="icon <?= isset($activePage) && $activePage == 'orders.php' ? 'active' : '' ?>">📦</a>
+    <a href="inventory.php"
+   class="icon <?= isset($activePage) && $activePage == 'inventory.php' ? 'active' : '' ?>">📊</a> 
+    <a href="settings.php"
    class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⚙️</a> 
-      
+
     </div>
 
     <!-- Main Menu Section -->
@@ -42,47 +48,48 @@
       </div>
 
       <div class="category-tabs">
-        <button><a href="pos.php">COFFEE</a></button>
-        <button><a href="pos1.php">PREMIUM MATCHA SERIES</a></button>
-        <button><a href="pos2.php">NON-COFFEE DRINKS</a></button>
-        <button><a href="pos3.php">FRAPPE</a></button>
-        <button><a href="pos4.php">FRUIT SODA</a></button>
-        <button><a href="pos5.php">PREMIUM TEA SERIES</a></button>
-        <button><a href="pos6.php">ADD-ONS</a></button>
-        <button><a href="pos7.php">COOKIES & MUFFINS</a></button>
-        <button><a href="pos8.php">WAFFLES</a></button>
-        <button><a href="pos9.php"><h3>FLAVORED FRIES</h3></a></button>
-        <button><a href="pos10.php">PASTA</a></button>
+        <button><a href="admin.php">COFFEE</a></button>
+        <button><a href="admin1.php">PREMIUM MATCHA SERIES</a></button>
+        <button><a href="admin2.php">NON-COFFEE DRINKS</a></button>
+        <button><a href="admin3.php">FRAPPE</a></button>
+        <button><a href="admin4.php">FRUIT SODA</a></button>
+        <button><a href="admin5.php"><h3>PREMIUM TEA SERIES</h3></a></button>
+        <button><a href="admin6.php">ADD-ONS</a></button>
+        <button><a href="admin7.php">COOKIES & MUFFINS</a></button>
+        <button><a href="admin8.php">WAFFLES</a></button>
+        <button><a href="admin9.php">FLAVORED FRIES</a></button>
+        <button><a href="admin10.php">PASTA</a></button>
       </div>
 
       <div class="product-grid">
-        <h3>FLAVORED FRIES</h3>
+        <h3>PREMIUM TEA SERIES</h3>
         <div class="items">
-          <div class="item">Cheese - 95</div>
-          <div class="item">Sour Cream - 95</div>
-          <div class="item">BBQ - 95</div>
-          <div class="item">Chili BBQ - 95</div>
-          <div class="item">Cheese Dip - 25</div>
-          
-         
-          
-         
+          <div class="item">Thai Milk Tea - 150</div>
+          <div class="item">Hibiscus Lychee - 125</div>
+          <div class="item">Peach Butterfly Pea - 135</div>
           
           
           
-         
-         
+          
+          
+          
+          
+          
+          
+          
+          
           
         </div>
       </div>
     </div>
 
-  <!-- Order Summary -->
+    <!-- Order Summary -->
    <div class="order-summary">
   <h3>Order Summary</h3>
   <div class="summary-box" id="order-summary-box">
     <p> </p>
   </div>  
+  
 
     <div class="checkout-row">
       <button class="clear">Clear</button>

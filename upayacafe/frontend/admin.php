@@ -4,31 +4,42 @@ session_start();
 // Handle checkout form submission
 $checkoutMessage = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
-    // Optionally get payment type from POST if exists
     $paymentType = $_POST['paymentType'] ?? 'cash';
-
-    // Order array from session or empty
     $order = $_SESSION['order'] ?? [];
 
-    // Compute total price
     $total = 0.0;
     foreach ($order as $item) {
         $total += $item['price'] * $item['qty'];
     }
 
-    // Save order to file (or you can save to DB)
-    file_put_contents('orders.json', json_encode([
+    // Load existing orders
+    $existingOrders = [];
+    if (file_exists('orders.json')) {
+        $existingOrders = json_decode(file_get_contents('orders.json'), true);
+        if (!is_array($existingOrders)) {
+            $existingOrders = [];
+        }
+    }
+
+    // Add new order to list
+    $existingOrders[] = [
         'order' => $order,
         'total' => $total,
         'payment' => $paymentType,
         'timestamp' => date('Y-m-d H:i:s')
-    ], JSON_PRETTY_PRINT));
+    ];
 
-    // Clear session order after checkout
+    // Save back to file
+    file_put_contents('orders.json', json_encode($existingOrders, JSON_PRETTY_PRINT));
+
+    // Clear session
     unset($_SESSION['order']);
 
-    $checkoutMessage = "Order paid. Total: ₱" . number_format($total, 2);
+    // Redirect to orders page
+    header("Location: orders.php");
+    exit();
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@400;500&display=swap" rel="stylesheet" />
 </head>
 <body>
-  
+
 
   <div class="logo">
     <h1>Upâyâ</h1>
@@ -48,16 +59,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
     
   </div>
 
-  <div class="pos-container">
+    <div class="pos-container">
     <!-- Sidebar -->
     <div class="sidebar">
-      <a href="pos.php" class="icon <?= isset($activePage) && $activePage == 'pos.php' ? 'active' : '' ?>">🏠</a>
-       <a href="settings.php"
+  <!-- Home Button -->
+    <a href="admin.php" 
+     class="icon <?= isset($activePage) && $activePage == 'admin.php' ? 'active' : '' ?>">🏠</a>
+    <a href="orders.php" 
+     class="icon <?= isset($activePage) && $activePage == 'orders.php' ? 'active' : '' ?>">📦</a>
+    <a href="inventory.php"
+   class="icon <?= isset($activePage) && $activePage == 'inventory.php' ? 'active' : '' ?>">📊</a> 
+    <a href="settings.php"
    class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⚙️</a> 
-      
-    </div>
-    
 
+    </div>
     <!-- Main Menu Section -->
     <div class="menu-section">
       <div class="search-bar">
@@ -65,17 +80,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
       </div>
 
       <div class="category-tabs">
-        <button><a href="pos.php"><h3>COFFEE</h3></a></button>
-        <button><a href="pos1.php">PREMIUM MATCHA SERIES</a></button>
-        <button><a href="pos2.php">NON-COFFEE DRINKS</a></button>
-        <button><a href="pos3.php">FRAPPE</a></button>
-        <button><a href="pos4.php">FRUIT SODA</a></button>
-        <button><a href="pos5.php">PREMIUM TEA SERIES</a></button>
-        <button><a href="pos6.php">ADD-ONS</a></button>
-        <button><a href="pos7.php">COOKIES & MUFFINS</a></button>
-        <button><a href="pos8.php">WAFFLES</a></button>
-        <button><a href="pos9.php">FLAVORED FRIES</a></button>
-        <button><a href="pos10.php">PASTA</a></button>
+        <button><a href="admin.php"><h3>COFFEE</h3></a></button>
+        <button><a href="admin1.php">PREMIUM MATCHA SERIES</a></button>
+        <button><a href="admin2.php">NON-COFFEE DRINKS</a></button>
+        <button><a href="admin3.php">FRAPPE</a></button>
+        <button><a href="admin4.php">FRUIT SODA</a></button>
+        <button><a href="admin5.php">PREMIUM TEA SERIES</a></button>
+        <button><a href="admin6.php">ADD-ONS</a></button>
+        <button><a href="admin7.php">COOKIES & MUFFINS</a></button>
+        <button><a href="admin8.php">WAFFLES</a></button>
+        <button><a href="admin9.php">FLAVORED FRIES</a></button>
+        <button><a href="admin10.php">PASTA</a></button>
       </div>
 
       <div class="product-grid" id="product-grid">

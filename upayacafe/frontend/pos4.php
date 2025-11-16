@@ -9,9 +9,6 @@
 
 </head>
 <body>
-  <form action="signin.php" method="POST" style="display:inline;">
-   <button class="logout-btn" type="submit">LOG OUT</button>
-    </form>
 
   <!-- <div class="top-bar">
     <span>12:00 AM</span>
@@ -32,6 +29,8 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <a href="pos.php" class="icon active">🏠</a>
+       <a href="settings.php"
+   class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⚙️</a> 
       
     </div>
 
