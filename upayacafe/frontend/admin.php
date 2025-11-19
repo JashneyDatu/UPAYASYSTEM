@@ -71,6 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
    class="icon <?= isset($activePage) && $activePage == 'inventory.php' ? 'active' : '' ?>">📊</a> 
     <a href="settings.php"
    class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⚙️</a> 
+   <a href="logout.php"
+   class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⬅️</a> 
+   
 
     </div>
     <!-- Main Menu Section -->

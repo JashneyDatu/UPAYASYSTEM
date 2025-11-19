@@ -28,7 +28,7 @@
         <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="user">
       </div>
 
-    <form action="pos.php" method="POST">
+    <form action="admin.php" method="POST">
      <label for="username">USERNAME:</label>
      <input type="text" id="username" name="username" required>
 
@@ -37,12 +37,7 @@
 
      <button type="submit">SIGN IN</button><br>
     
-    </form>
-    <form action="add.php" method="POST">
-       <button type="submit">ADD USER</button>
 
-        
-    </form>
     </div>
   </div>
 </body>
