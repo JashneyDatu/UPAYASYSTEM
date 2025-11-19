@@ -36,7 +36,9 @@
     <a href="inventory.php"
    class="icon <?= isset($activePage) && $activePage == 'inventory.php' ? 'active' : '' ?>">📊</a> 
     <a href="settings.php"
-   class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⚙️</a> 
+   class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⚙️</a>
+   <a href="logout.php"
+   class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⬅️</a>  
 
     </div>
     <!-- Main Menu Section -->
@@ -96,6 +98,131 @@
       </form>
     </div>  
       </div>
+      <script src="pos.js"></script>
+<!-- VOID PASSWORD POPUP -->
+<div id="voidModal" class="modal">
+  <div class="modal-content">
+      <h3>Admin Authorization Required</h3>
+      <p>Enter admin password to continue:</p>
+
+      <input type="password" id="voidPassword" placeholder="Enter password">
+
+      <div class="modal-buttons">
+          <button id="cancelVoid">Cancel</button>
+          <button id="confirmVoid">Confirm</button>
+      </div>
+  </div>
+</div>
+
+<style>
+/* POPUP BACKGROUND */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* POPUP BOX */
+.modal-content {
+  background: white;
+  width: 350px;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.modal-content input {
+  width: 90%;
+  padding: 10px;
+  margin-top: 15px;
+  border-radius: 6px;
+  border: 1px solid #bca58c;
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.modal-buttons button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+#cancelVoid {
+  background: #777;
+  color: white;
+}
+
+#confirmVoid {
+  background: #a83232;
+  color: white;
+}
+</style>
+
+<script>
+// Open popup when clicking VOID button
+document.querySelector(".void").addEventListener("click", function(e) {
+    e.preventDefault();
+    document.getElementById("voidModal").style.display = "flex";
+});
+
+// Close popup
+document.getElementById("cancelVoid").addEventListener("click", function() {
+    document.getElementById("voidModal").style.display = "none";
+});
+
+// Confirm password
+document.getElementById("confirmVoid").addEventListener("click", function() {
+    const enteredPass = document.getElementById("voidPassword").value;
+
+    // ADMIN PASSWORD (can later be verified server-side)
+    const correctPass = "admin123"; 
+
+    if (enteredPass === correctPass) {
+        document.getElementById("voidModal").style.display = "none";
+
+        // CLEAR ORDER SUMMARY
+        const orderSummary = document.querySelector(".order-summary .summary-box");
+        orderSummary.innerHTML = "<p>Order has been voided.</p>";
+
+        // OPTIONAL: Send void request to server to clear session/order
+        fetch("void_order.php", { 
+            method: "POST", 
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: "pin=" + encodeURIComponent(enteredPass)
+        })
+        .then(response => response.text())
+        .then(data => console.log(data))
+        .catch(err => console.error(err));
+
+    } else {
+        alert("Incorrect password!");
+    }
+});
+
+// Close modal if user clicks outside the modal content
+window.addEventListener("click", function(e) {
+    const modal = document.getElementById("voidModal");
+    if (e.target === modal) {
+        modal.style.display = "none";
+    }
+});
+</script>
+
     </div>
   </div>
 </body>
