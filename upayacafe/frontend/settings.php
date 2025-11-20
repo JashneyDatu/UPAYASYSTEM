@@ -138,10 +138,12 @@ tr:hover td {
 
     <!-- SIDEBAR -->
     <div class="sidebar">
-        <a href="admin.php" class="icon">🏠</a>
-        <a href="orders.php" class="icon">📦</a>
-        <a href="inventory.php" class="icon">📊</a>
+        <a href="admin.php" class="icon active">🏠</a>
+        <a href="orderhistory.php" class="icon active">📝</a>
+        <a href="inventory.php" class="icon active">📦</a>
+        <a href="salesreport.php" class="icon active">📊</a>
         <a href="settings.php" class="icon active">⚙️</a>
+        <a href="logout.php" class="icon active">⬅️</a>
     </div>
 
     <!-- CONTENT -->

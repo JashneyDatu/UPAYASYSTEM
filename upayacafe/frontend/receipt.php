@@ -1,6 +1,6 @@
 <?php
 // Get order from POST
-$order = $_POST['items'] ?? [];
+$order = $_POST['order'] ?? [];
 $paymentType = $_POST['paymentType'] ?? 'Cash';
 
 // Define discount and tax

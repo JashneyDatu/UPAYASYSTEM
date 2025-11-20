@@ -6,8 +6,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearBtn = document.querySelector('.clear');
   const voidBtn = document.querySelector('.void');
 
-  const orderItems = [];
+  let orderItems = [];
   let selectedIndex = -1; // Track selected order item index
+
+  // Function to update session storage with current order items
+  function updateSession() {
+    sessionStorage.setItem('orderItems', JSON.stringify(orderItems));
+  }
+
+  // Function to load order items from session storage
+  function loadSession() {
+    const storedItems = sessionStorage.getItem('orderItems');
+    if (storedItems) {
+      orderItems = JSON.parse(storedItems);
+    }
+  }
+
+  // Load order items on page load
+  loadSession();
 
   // Render order summary
   function renderOrderSummary() {
@@ -64,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     selectedIndex = -1;
     renderOrderSummary();
+    updateSession();
   });
 
   // Clear all orders
@@ -71,17 +88,68 @@ document.addEventListener('DOMContentLoaded', () => {
     orderItems.length = 0;
     selectedIndex = -1;
     renderOrderSummary();
+    updateSession();
   });
 
-  // Void (remove) selected item
-  voidBtn.addEventListener('click', () => {
-    if (selectedIndex === -1) {
-      alert('Please select an item in the order summary to void.');
-      return;
+  // Open popup when clicking VOID button, but only if there's an order
+  voidBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (orderItems.length === 0) {
+      alert('No order to void.');
+    } else {
+      document.getElementById('voidModal').style.display = 'flex';
     }
-    orderItems.splice(selectedIndex, 1);
-    selectedIndex = -1;
-    renderOrderSummary();
+  });
+
+  // Close popup
+  document.getElementById('cancelVoid').addEventListener('click', function() {
+    document.getElementById('voidModal').style.display = 'none';
+  });
+
+  // Confirm password and void selected item or entire order
+  document.getElementById('confirmVoid').addEventListener('click', function() {
+    const enteredPass = document.getElementById('voidPassword').value;
+
+    // ADMIN PASSWORD (can later be verified server-side)
+    const correctPass = 'admin123';
+
+    if (enteredPass === correctPass) {
+      document.getElementById('voidModal').style.display = 'none';
+
+      if (selectedIndex !== -1) {
+        // Void selected item
+        orderItems.splice(selectedIndex, 1);
+        selectedIndex = -1;
+      } else {
+        // Void entire order
+        orderItems.length = 0;
+        selectedIndex = -1;
+      }
+
+      renderOrderSummary();
+      updateSession();
+
+      // OPTIONAL: Send void request to server to clear session/order
+      fetch('void_order.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'pin=' + encodeURIComponent(enteredPass)
+      })
+      .then(response => response.text())
+      .then(data => console.log(data))
+      .catch(err => console.error(err));
+
+    } else {
+      alert('Incorrect password!');
+    }
+  });
+
+  // Close modal if user clicks outside the modal content
+  window.addEventListener('click', function(e) {
+    const modal = document.getElementById('voidModal');
+    if (e.target === modal) {
+      modal.style.display = 'none';
+    }
   });
 
   // Before submitting form, add hidden inputs for PHP

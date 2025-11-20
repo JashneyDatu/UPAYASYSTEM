@@ -4,31 +4,85 @@ session_start();
 // Handle checkout form submission
 $checkoutMessage = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
-    // Optionally get payment type from POST if exists
     $paymentType = $_POST['paymentType'] ?? 'cash';
-
-    // Order array from session or empty
     $order = $_SESSION['order'] ?? [];
 
-    // Compute total price
     $total = 0.0;
     foreach ($order as $item) {
         $total += $item['price'] * $item['qty'];
     }
 
-    // Save order to file (or you can save to DB)
-    file_put_contents('orders.json', json_encode([
+    // Load existing orders
+    $existingOrders = [];
+    if (file_exists('orders.json')) {
+        $existingOrders = json_decode(file_get_contents('orders.json'), true);
+        if (!is_array($existingOrders)) {
+            $existingOrders = [];
+        }
+    }
+
+    // Add new order to list
+    $existingOrders[] = [
         'order' => $order,
         'total' => $total,
         'payment' => $paymentType,
         'timestamp' => date('Y-m-d H:i:s')
-    ], JSON_PRETTY_PRINT));
+    ];
 
-    // Clear session order after checkout
-    unset($_SESSION['order']);
+    // Save back to file
+    file_put_contents('orders.json', json_encode($existingOrders, JSON_PRETTY_PRINT));
 
-    $checkoutMessage = "Order paid. Total: ₱" . number_format($total, 2);
+    // Redirect to orders page
+    header("Location: receipt.php");
+    exit();
 }
+// Handle AJAX addItem requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addItem'])) {
+    $name = $_POST['name'];
+    $price = (float)$_POST['price'];
+    $qty = 1;
+
+    if (!isset($_SESSION['order'])) {
+        $_SESSION['order'] = [];
+    }
+
+    $found = false;
+    foreach ($_SESSION['order'] as &$item) {
+        if ($item['name'] === $name) {
+            $item['qty'] += $qty;
+            $found = true;
+            break;
+        }
+    }
+    if (!$found) {
+        $_SESSION['order'][] = ['name' => $name, 'price' => $price, 'qty' => $qty];
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode($_SESSION['order']);
+    exit();
+}
+
+// Handle Clear order button AJAX
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['clearOrder'])) {
+    unset($_SESSION['order']);
+    header('Content-Type: application/json');
+    echo json_encode([]);
+    exit();
+}
+
+// Prepare order summary HTML for page load (without total)
+$order = $_SESSION['order'] ?? [];
+$orderItemsHtml = '';
+if (!empty($order)) {
+    foreach ($order as $item) {
+        $subtotal = $item['price'] * $item['qty'];
+        $orderItemsHtml .= "<div class='order-item'>".htmlspecialchars($item['name'])." x{$item['qty']} - ₱{$subtotal}</div>";
+    }
+} else {
+    $orderItemsHtml = "<p>No items added yet.</p>";
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Upâyâ Café | POS System</title>
-  <link rel="stylesheet" href="pos.css" />
+  <link rel="stylesheet" href="menu.css" />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@400;500&display=swap" rel="stylesheet" />
 </head>
 <body>
@@ -52,79 +106,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
     <!-- Sidebar -->
     <div class="sidebar">
   <!-- Home Button -->
-    <a href="admin.php" 
-     class="icon <?= isset($activePage) && $activePage == 'admin.php' ? 'active' : '' ?>">🏠</a>
-    <a href="orders.php" 
-     class="icon <?= isset($activePage) && $activePage == 'orders.php' ? 'active' : '' ?>">📦</a>
-    <a href="inventory.php"
-   class="icon <?= isset($activePage) && $activePage == 'inventory.php' ? 'active' : '' ?>">📊</a> 
-    <a href="settings.php"
-   class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⚙️</a> 
-   <a href="logout.php"
-   class="icon <?= isset($activePage) && $activePage == 'settings.php' ? 'active' : '' ?>">⬅️</a> 
-
-    </div>
-       <!-- Main Menu Section -->
+    <a href="admin.php" class="icon active">🏠</a>
+    <a href="orderhistory.php" class="icon active">📝</a>
+    <a href="inventory.php" class="icon active">📦</a>
+    <a href="salesreport.php" class="icon active">📊</a>
+    <a href="settings.php" class="icon active">⚙️</a>
+    <a href="logout.php" class="icon active">⬅️</a>
+</div>
+    <!-- Main Menu Section -->
     <div class="menu-section">
       <div class="search-bar">
-        <input type="text" placeholder="SEARCH FOR PRODUCT">
+        <input type="text" placeholder="SEARCH FOR PRODUCT" id="search-box" />
       </div>
 
       <div class="category-tabs">
-        <button><a href="admin.php">COFFEE</a></button>
-        <button><a href="admin1.php"><h3>PREMIUM MATCHA SERIES</h3></a></button>
-        <button><a href="admin2.php">NON-COFFEE DRINKS</a></button>
-        <button><a href="admin3.php">FRAPPE</a></button>
-        <button><a href="admin4.php">FRUIT SODA</a></button>
-        <button><a href="admin5.php">PREMIUM TEA SERIES</a></button>
-        <button><a href="admin6.php">ADD-ONS</a></button>
-        <button><a href="admin7.php">COOKIES & MUFFINS</a></button>
-        <button><a href="admin8.php">WAFFLES</a></button>
-        <button><a href="admin9.php">FLAVORED FRIES</a></button>
-        <button><a href="admin10.php">PASTA</a></button>
-      </div>
+      <button><a href="admin.php">COFFEE</a></button>
+      <button class="active"><a href="admin1.php"><h3>PREMIUM MATCHA SERIES</h3></a></button>
+      <button><a href="admin2.php">NON-COFFEE DRINKS</a></button>
+      <button><a href="admin3.php">FRAPPE</a></button>
+      <button><a href="admin4.php">FRUIT SODA</a></button>
+      <button><a href="admin5.php">PREMIUM TEA SERIES</a></button>
+      <button><a href="admin6.php">COOKIES & MUFFINS</a></button>
+      <button><a href="admin7.php">WAFFLES</a></button>
+      <button><a href="admin8.php">FLAVORED FRIES</a></button>
+      <button><a href="admin9.php">PASTA</a></button>
+      <button><a href="admin10.php">ADD-ONS</a></button>
+    </div>
 
-      <div class="product-grid" id="product-grid">
-        <h3>PREMIUM MATCHA SERIES</h3>
-        <div class="items">
-          <div class="item" data-name="Matcha Latte" data-price="145">Matcha Latte - 145</div>
+    <div class="product-grid" id="product-grid">
+      <h3>PREMIUM MATCHA SERIES</h3>
+      <div class="items">
+       <div class="item" data-name="Matcha Latte" data-price="145">Matcha Latte - 145</div>
           <div class="item" data-name="Strawberry Matcha Latte" data-price="160">Strawberry Matcha Latte - 160</div>
           <div class="item" data-name="Blueberry Matcha Latte" data-price="170">Blueberry Matcha Latte - 170</div>
           <div class="item" data-name="Salted Matcha Latte" data-price="160">Salted Matcha Latte - 160</div>
           <div class="item" data-name="Banana Matcha Latte" data-price="160">Banana Matcha Latte - 160</div>
-          <div class="item" data-name="Pure Matcha Latte" data-price="160">Pure Matcha Latte - 170</div>
+          <div class="item" data-name="Pure Matcha Latte" data-price="170">Pure Matcha Latte - 170</div>
           <div class="item" data-name="Creamy Matcha Latte" data-price="160">Creamy Matcha Latte - 160</div>
-          <div class="item" data-name="Peach Matcha Latte" data-price="160">Peach Matcha Latte - 165</div>
-          <div class="item" data-name="Dirty Matcha Latte" data-price="160">Dirty Matcha Latte - 130</div>
-          <div class="item" data-name="Peach Mango Matcha Latte" data-price="160">Peach Mango Matcha Latte - 155</div>
-          <div class="item" data-name="Strawberry Matcha Latte" data-price="160">Mango Matcha Latte - 160</div>
-          <div class="item">Biscoff Matcha Latte - 180</div>
-          <div class="item">Hazelnut Matcha Latte - 160</div>
-          <div class="item">White Choco Matcha Latte - 120</div>
-          <div class="item">Vanilla Matcha Latte - 160</div>
-        </div>
+          <div class="item" data-name="Peach Matcha Latte" data-price="165">Peach Matcha Latte - 165</div>
+          <div class="item" data-name="Dirty Matcha Latte" data-price="130">Dirty Matcha Latte - 130</div>
+          <div class="item" data-name="Peach Mango Matcha Latte" data-price="155">Peach Mango Matcha Latte - 155</div>
+          <div class="item" data-name="Mango Matcha Latte" data-price="160">Mango Matcha Latte - 160</div>
+          <div class="item" data-name="Biscoff Matcha Latte" data-price="180">Biscoff Matcha Latte - 180</div>
+          <div class="item" data-name="Hazelnut Matcha Latte" data-price="160">Hazelnut Matcha Latte - 160</div>
+          <div class="item" data-name="White Choco Matcha Latte" data-price="120">White Choco Matcha Latte - 120</div>
+          <div class="item" data-name="Vanilla Matcha Latte" data-price="160">Vanilla Matcha Latte - 160</div>
       </div>
     </div>
-
+    </div>
 
     <!-- Order Summary -->
     <div class="order-summary">
       
       <h3>Order Summary</h3>
-      <div class="summary-box" id="order-summary-box">
-        <p>No items added yet.</p>
-      </div>
+      <div class="summary-box" id="order-summary-box"><?= $orderItemsHtml ?></div>
 
-      <div class="checkout-row">
+       <div class="checkout-row">
       <button class="clear">Clear</button>
       <button class="void">Void</button>
-      <form action="receipt.php" method="POST">
-      <button class="checkout">CHECKOUT ORDER</button>
-      </form>
+      <a href="checkout.php" class="checkout" style="display:inline-block;text-decoration:none;">
+  <button type="button" class="checkout">CHECKOUT ORDER</button>
+</a>
+
     </div>  
   </div>
 
-<script src="pos.js"></script>
 <!-- VOID PASSWORD POPUP -->
 <div id="voidModal" class="modal">
   <div class="modal-content">
@@ -140,6 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
   </div>
 </div>
 
+
 <style>
 /* POPUP BACKGROUND */
 .modal {
@@ -151,7 +198,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.6);
-  display: flex;
   justify-content: center;
   align-items: center;
 }
@@ -200,10 +246,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
 </style>
 
 <script>
-// Open popup when clicking VOID button
+// Open popup when clicking VOID button, but only if there's an order
 document.querySelector(".void").addEventListener("click", function(e) {
     e.preventDefault();
-    document.getElementById("voidModal").style.display = "flex";
+    const summaryBox = document.getElementById("order-summary-box");
+    if (summaryBox.innerHTML.includes("No items added yet.")) {
+        alert("No order to void.");
+    } else {
+        document.getElementById("voidModal").style.display = "flex";
+    }
 });
 
 // Close popup
@@ -247,8 +298,47 @@ window.addEventListener("click", function(e) {
         modal.style.display = "none";
     }
 });
+
+document.querySelectorAll('.item').forEach(item => {
+  item.addEventListener('click', () => {
+    const name = item.getAttribute('data-name');
+    const price = item.getAttribute('data-price');
+    const data = new FormData();
+    data.append('addItem', '1');
+    data.append('name', name);
+    data.append('price', price);
+    fetch('', { method: 'POST', body: data })
+      .then(res => res.json())
+      .then(order => updateOrderSummary(order));
+  });
+});
+
+function updateOrderSummary(order) {
+  const container = document.getElementById('order-summary-box');
+  if (!order || order.length === 0) {
+    container.innerHTML = '<p>No items added yet.</p>';
+    return;
+  }
+  let html = '';
+  order.forEach(item => {
+    const subtotal = item.price * item.qty;
+    html += `<div class="order-item">${item.name} x${item.qty} - ₱${subtotal}</div>`;
+  });
+  container.innerHTML = html;
+}
+
+document.querySelector('.clear').addEventListener('click', () => {
+  if (!confirm('Clear the entire order?')) return;
+  fetch('', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'clearOrder=1' })
+    .then(res => res.json())
+    .then(() => {
+      updateOrderSummary([]);
+    });
+});
+
 </script>
 
+<script src="pos.js"></script>
 
 </body>
 </html>
